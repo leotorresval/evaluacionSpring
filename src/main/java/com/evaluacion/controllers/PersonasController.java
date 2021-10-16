@@ -17,10 +17,9 @@ import com.evaluacion.models.Personas;
 import com.evaluacion.services.PersonasService;
 import com.evaluacion.utils.Utilitarios;
 
-import ch.qos.logback.classic.pattern.Util;
 
 @RestController
-@RequestMapping("/persona")
+@RequestMapping
 public class PersonasController {
 
 	private static final Logger logger =  LoggerFactory.getLogger(PersonasController.class);
@@ -33,7 +32,7 @@ public class PersonasController {
 		this.personaService = personaService;
 	}
 
-	@GetMapping(produces = "application/json")
+	@GetMapping(value = "/persona")
 	public List<Personas> listarPersonas() throws Exception{
 		try {
 			return personaService.listarPersonas();
@@ -43,10 +42,12 @@ public class PersonasController {
 		}
 	}
 	
-	@PostMapping(produces = "application/json")
+	@PostMapping(value = "/persona")
 	public String crearPersona(@RequestBody @Validated Personas persona)  {
 		try {
 			validarPersona(persona);
+			if(personaService.buscarCedula(persona)!=null)
+				throw new Exception("Esta persona ya existe en el sistema");
 			personaService.crearPersona(persona);
 			return "Persona creada";
 		} catch (Exception e) {
@@ -56,10 +57,12 @@ public class PersonasController {
 		}
 	}
 	
-	@PutMapping(produces = "application/json")
+	@PutMapping(value = "/persona")
 	public String actualizarPersona(@RequestBody @Validated Personas persona)  {
 		try {
 			validarPersona(persona);
+			if(personaService.buscarCedula(persona)==null)
+				throw new Exception("Esta persona no existe en el sistema, no se puede actualizar");
 			personaService.crearPersona(persona);
 			return "Persona actualizada";
 		} catch (Exception e) {
@@ -68,11 +71,11 @@ public class PersonasController {
 		}
 	}
 	
-	@DeleteMapping(produces = "application/json")
-	public boolean eliminarPersona(@RequestBody @Validated Personas persona) throws Exception {
+	@DeleteMapping(value = "/persona")
+	public String eliminarPersona(@RequestBody @Validated Personas persona) throws Exception {
 		try {
 			personaService.eliminarPersona(persona);
-			return true;
+			return "Persona eliminada";
 		} catch (Exception e) {
 			logger.info("Error en el consumo del servicio eliminar persona, "+e.getMessage());
 			throw new Exception(e.getMessage());
@@ -97,7 +100,7 @@ public class PersonasController {
 			throw new Exception("El canton solo puede contener letras");
 		if(!Utilitarios.verificarNumeros(p.getTelefono()))
 			throw new Exception("El telefono solo puede contener numeros");
-		if(!Utilitarios.verificarCorreo(p.getEmail()))
+		if(Utilitarios.verificarCorreo(p.getEmail()))
 			throw new Exception("El correo ingresado es erroneo");
 	}
 }

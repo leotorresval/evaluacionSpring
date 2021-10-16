@@ -31,4 +31,8 @@ public class PersonasService {
 	public void eliminarPersona(Personas persona) {
 		personasRepository.delete(persona);
 	}
+	
+	public Personas buscarCedula(Personas p) {
+		return personasRepository.findByCedula(p.getCedula());
+	}
 }
